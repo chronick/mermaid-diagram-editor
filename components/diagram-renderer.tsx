@@ -7,7 +7,7 @@ import { AlertCircle } from "lucide-react"
 
 interface DiagramRendererProps {
   code: string
-  theme: string
+  theme: "base" | "default" | "dark" | "forest" | "neutral" | "null"
 }
 
 export default function DiagramRenderer({ code, theme }: DiagramRendererProps) {

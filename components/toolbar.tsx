@@ -40,7 +40,7 @@ export default function Toolbar({ theme, onThemeChange, generateShareUrl, diagra
   }
 
   const exportSVG = () => {
-    const svgElement = document.querySelector("svg")
+    const svgElement = document.querySelector("svg#diagram")
     if (!svgElement) return
 
     const svgData = new XMLSerializer().serializeToString(svgElement)
@@ -57,29 +57,60 @@ export default function Toolbar({ theme, onThemeChange, generateShareUrl, diagra
   }
 
   const exportPNG = async () => {
-    const svgElement = document.querySelector("svg")
-    if (!svgElement) return
+    const svgElement = document.querySelector("svg#diagram")
+    if (!svgElement) {
+      console.error("No diagram SVG found")
+      return
+    }
 
     const canvas = document.createElement("canvas")
     const ctx = canvas.getContext("2d")
     if (!ctx) return
 
-    const svgData = new XMLSerializer().serializeToString(svgElement)
-    const img = new Image()
-    img.crossOrigin = "anonymous"
-    img.src = "data:image/svg+xml;base64," + btoa(svgData)
+    // Get the SVG dimensions
+    const svgRect = svgElement.getBoundingClientRect()
+    
+    // Scale factor for better quality
+    const scale = 2
+    canvas.width = svgRect.width * scale
+    canvas.height = svgRect.height * scale
+    
+    // Scale the context to match
+    ctx.scale(scale, scale)
 
-    img.onload = () => {
-      canvas.width = img.width
-      canvas.height = img.height
-      ctx.drawImage(img, 0, 0)
+    try {
+      // Clean up the SVG string and properly encode it
+      const svgData = new XMLSerializer().serializeToString(svgElement)
+      const cleanedSvgData = encodeURIComponent(svgData
+        .replace(/(\r\n|\n|\r)/gm, "") // Remove newlines
+        .replace(/%20/g, " ") // Fix spaces
+        .replace(/%3D/g, "=") // Fix equals signs
+        .replace(/%22/g, "'") // Replace double quotes with single quotes
+        .replace(/%3A/g, ":") // Fix colons
+      )
 
+      const img = new Image()
+      img.crossOrigin = "anonymous"
+
+      await new Promise((resolve, reject) => {
+        img.onload = resolve
+        img.onerror = reject
+        img.src = `data:image/svg+xml;charset=utf-8,${cleanedSvgData}`
+      })
+
+      // Draw with proper dimensions
+      ctx.drawImage(img, 0, 0, svgRect.width, svgRect.height)
+
+      // Convert to PNG and download
+      const pngData = canvas.toDataURL("image/png")
       const link = document.createElement("a")
       link.download = "diagram.png"
-      link.href = canvas.toDataURL("image/png")
+      link.href = pngData
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
+    } catch (error) {
+      console.error("Failed to export PNG:", error)
     }
   }
 
