@@ -7,7 +7,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Share, Download, HelpCircle, Copy, Check } from "lucide-react"
-import { diagramTemplates } from "@/lib/constants"
+import HelpDialog from "@/components/help-dialog"
+import ExamplesDropdown from "@/components/examples-dropdown"
 
 interface ToolbarProps {
   theme: string
@@ -130,18 +131,7 @@ export default function Toolbar({ theme, onThemeChange, generateShareUrl, diagra
           </SelectContent>
         </Select>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline">Templates</Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            {Object.entries(diagramTemplates).map(([key, template]) => (
-              <DropdownMenuItem key={key} onClick={() => (window.location.href = `/?data=${template}`)}>
-                {key}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <ExamplesDropdown theme={theme} />
       </div>
 
       <div className="flex items-center space-x-2">
@@ -184,55 +174,7 @@ export default function Toolbar({ theme, onThemeChange, generateShareUrl, diagra
         </DialogContent>
       </Dialog>
 
-      <Dialog open={helpDialogOpen} onOpenChange={setHelpDialogOpen}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Mermaid Diagram Help</DialogTitle>
-            <DialogDescription>Learn how to create diagrams with Mermaid syntax</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-            <div>
-              <h3 className="text-lg font-medium">Sequence Diagram</h3>
-              <pre className="bg-muted p-2 rounded-md text-sm">
-                {`sequenceDiagram
-  participant Alice
-  participant Bob
-  Alice->>Bob: Hello Bob, how are you?
-  Bob-->>Alice: I'm good thanks!`}
-              </pre>
-            </div>
-            <div>
-              <h3 className="text-lg font-medium">Flowchart</h3>
-              <pre className="bg-muted p-2 rounded-md text-sm">
-                {`flowchart TD
-  A[Start] --> B{Is it?}
-  B -->|Yes| C[OK]
-  C --> D[Rethink]
-  D --> B
-  B ---->|No| E[End]`}
-              </pre>
-            </div>
-            <div>
-              <h3 className="text-lg font-medium">Class Diagram</h3>
-              <pre className="bg-muted p-2 rounded-md text-sm">
-                {`classDiagram
-  Animal <|-- Duck
-  Animal <|-- Fish
-  Animal <|-- Zebra
-  Animal : +int age
-  Animal : +String gender
-  Animal: +isMammal()
-  Animal: +mate()
-  class Duck{
-    +String beakColor
-    +swim()
-    +quack()
-  }`}
-              </pre>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <HelpDialog open={helpDialogOpen} onOpenChange={setHelpDialogOpen} />
     </div>
   )
 }
