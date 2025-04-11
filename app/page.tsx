@@ -8,14 +8,17 @@ import Toolbar from "@/components/toolbar"
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from "lz-string"
 import { defaultDiagramCode } from "@/lib/constants"
 import type { DiagramData } from "@/lib/types"
+import { ResizablePanel, ResizablePanelGroup, ResizableHandle } from "@/components/ui/resizable"
 
 export default function Home() {
   const searchParams = useSearchParams()
   const [diagramCode, setDiagramCode] = useState<string>(defaultDiagramCode)
-  const [theme, setTheme] = useState<"base" | "default" | "dark" | "forest" | "neutral" | "null">("default")
+  const [mermaidTheme, setMermaidTheme] = useState<"base" | "default" | "dark" | "forest" | "neutral" | "null">("default")
   const [isInitialized, setIsInitialized] = useState(false)
   const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const skipNextUpdateRef = useRef(false)
+  const [editorSize, setEditorSize] = useState(50) // Default 50% width
+  const [isExpanded, setIsExpanded] = useState(false)
 
   // Load data from URL or localStorage on initial render
   useEffect(() => {
@@ -29,7 +32,7 @@ export default function Home() {
           const parsedData: DiagramData = JSON.parse(decompressed)
           setDiagramCode(parsedData.mermaidCode)
           if (parsedData.settings?.theme) {
-            setTheme(parsedData.settings.theme as "base" | "default" | "dark" | "forest" | "neutral" | "null")
+            setMermaidTheme(parsedData.settings.theme as "base" | "default" | "dark" | "forest" | "neutral" | "null")
           }
         }
       } catch (error) {
@@ -43,7 +46,7 @@ export default function Home() {
           const parsedData: DiagramData = JSON.parse(savedDiagram)
           setDiagramCode(parsedData.mermaidCode)
           if (parsedData.settings?.theme) {
-            setTheme(parsedData.settings.theme as "base" | "default" | "dark" | "forest" | "neutral" | "null")
+            setMermaidTheme(parsedData.settings.theme as "base" | "default" | "dark" | "forest" | "neutral" | "null")
           }
         } catch (error) {
           console.error("Failed to parse saved diagram", error)
@@ -68,7 +71,7 @@ export default function Home() {
     const diagramData: DiagramData = {
       mermaidCode: diagramCode,
       settings: {
-        theme: theme,
+        theme: mermaidTheme,
       },
       appVersion: 1,
     }
@@ -96,16 +99,16 @@ export default function Home() {
         clearTimeout(updateTimeoutRef.current)
       }
     }
-  }, [diagramCode, theme, isInitialized])
+  }, [diagramCode, mermaidTheme, isInitialized])
 
   const handleCodeChange = (newCode: string) => {
     setDiagramCode(newCode)
   }
 
-  const handleThemeChange = (newTheme: string) => {
+  const handleMermaidThemeChange = (newTheme: string) => {
     if (newTheme === "base" || newTheme === "default" || newTheme === "dark" || 
         newTheme === "forest" || newTheme === "neutral" || newTheme === "null") {
-      setTheme(newTheme)
+      setMermaidTheme(newTheme)
     }
   }
 
@@ -113,7 +116,7 @@ export default function Home() {
     const diagramData: DiagramData = {
       mermaidCode: diagramCode,
       settings: {
-        theme: theme,
+        theme: mermaidTheme,
       },
       appVersion: 1,
     }
@@ -123,22 +126,53 @@ export default function Home() {
     return `${window.location.origin}/?data=${compressed}`
   }
 
+  const toggleExpandEditor = () => {
+    if (isExpanded) {
+      setEditorSize(50) // Reset to default 50%
+    } else {
+      setEditorSize(67) // Expand to 67% (2/3)
+    }
+    setIsExpanded(!isExpanded)
+  }
+
   return (
     <div className="flex flex-col h-screen bg-background">
       <Toolbar
-        theme={theme}
-        onThemeChange={handleThemeChange}
+        theme={mermaidTheme}
+        onThemeChange={handleMermaidThemeChange}
         generateShareUrl={generateShareUrl}
         diagramCode={diagramCode}
       />
-      <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
-        <div className="w-full md:w-1/2 h-1/2 md:h-full overflow-hidden border-r border-border">
-          <DiagramEditor code={diagramCode} onChange={handleCodeChange} />
-        </div>
-        <div className="w-full md:w-1/2 h-1/2 md:h-full overflow-auto p-4">
-          <DiagramRenderer code={diagramCode} theme={theme} />
-        </div>
-      </div>
+      <ResizablePanelGroup
+        direction="horizontal"
+        className="flex-1 overflow-hidden"
+      >
+        <ResizablePanel 
+          defaultSize={editorSize}
+          minSize={30}
+          className="h-full"
+          onResize={(size) => {
+            setEditorSize(size);
+            // Reset isExpanded state if user manually resizes
+            if (size !== 50 && size !== 67) {
+              setIsExpanded(false);
+            }
+          }}
+        >
+          <DiagramEditor 
+            code={diagramCode} 
+            onChange={handleCodeChange} 
+            onToggleExpand={toggleExpandEditor}
+            isExpanded={isExpanded}
+          />
+        </ResizablePanel>
+        <ResizableHandle withHandle />
+        <ResizablePanel className="h-full">
+          <div className="h-full w-full overflow-auto p-4">
+            <DiagramRenderer code={diagramCode} theme={mermaidTheme} />
+          </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   )
 }

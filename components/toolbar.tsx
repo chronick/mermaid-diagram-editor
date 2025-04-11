@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Share, Download, HelpCircle, Copy, Check } from "lucide-react"
 import HelpDialog from "@/components/help-dialog"
 import ExamplesDropdown from "@/components/examples-dropdown"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 interface ToolbarProps {
   theme: string
@@ -117,7 +118,7 @@ export default function Toolbar({ theme, onThemeChange, generateShareUrl, diagra
 
   return (
     <div className="flex items-center justify-between p-2 border-b border-border bg-card">
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center space-x-3">
         <h1 className="text-xl font-bold">Mermaid Diagram Editor</h1>
         <Select value={theme} onValueChange={onThemeChange}>
           <SelectTrigger className="w-[120px]">
@@ -132,9 +133,11 @@ export default function Toolbar({ theme, onThemeChange, generateShareUrl, diagra
         </Select>
 
         <ExamplesDropdown theme={theme} />
+        
+        <ThemeToggle />
       </div>
 
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center space-x-3">
         <Button variant="outline" onClick={() => setHelpDialogOpen(true)}>
           <HelpCircle className="h-4 w-4 mr-2" />
           Help
