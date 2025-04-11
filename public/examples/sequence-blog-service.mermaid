@@ -1,28 +1,45 @@
 sequenceDiagram
-    participant web as Web Browser
-    participant blog as Blog Service
-    participant account as Account Service
-    participant mail as Mail Service
-    participant db as Storage
+    participant User as Customer
+    participant Cart as Shopping Cart
+    participant Auth as Authentication
+    participant Pay as Payment Service
+    participant Inv as Inventory
+    participant Ship as Shipping Service
 
-    Note over web,db: The user must be logged in to submit blog posts
-    web->>+account: Logs in using credentials
-    account->>db: Query stored accounts
-    db->>account: Respond with query result
+    Note over User,Ship: The customer must be logged in to complete checkout
+    User->>+Auth: Log in using credentials
+    Auth->>Auth: Validate credentials
 
-    alt Credentials not found
-        account->>web: Invalid credentials
-    else Credentials found
-        account->>-web: Successfully logged in
+    alt Invalid credentials
+        Auth->>User: Authentication failed
+    else Valid credentials
+        Auth->>-User: Successfully logged in
 
-        Note over web,db: When the user is authenticated, they can now submit new posts
-        web->>+blog: Submit new post
-        blog->>db: Store post data
-
-        par Notifications
-            blog--)mail: Send mail to blog subscribers
-            blog--)db: Store in-site notifications
-        and Response
-            blog-->>-web: Successfully posted
+        Note over User,Ship: Customer proceeds to checkout with items in cart
+        User->>+Cart: Proceed to checkout
+        Cart->>Inv: Verify item availability
+        
+        alt Items unavailable
+            Inv->>Cart: Some items out of stock
+            Cart->>User: Notify unavailable items
+        else All items available
+            Inv->>Cart: All items available
+            Cart->>Pay: Process payment
+            
+            alt Payment failed
+                Pay->>Cart: Payment declined
+                Cart->>User: Request alternative payment
+            else Payment successful
+                Pay->>Cart: Payment confirmed
+                Cart->>Inv: Update inventory
+                Cart->>Ship: Generate shipping label
+                
+                par Notifications
+                    Cart--)User: Send order confirmation email
+                    Ship--)User: Send tracking information
+                end
+                
+                Cart-->>-User: Order successfully placed
+            end
         end
     end 

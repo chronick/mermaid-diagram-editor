@@ -3,8 +3,7 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu"
-import { mermaidExamples, loadMermaidExample, formatExampleName, createShareableUrl } from "@/lib/helpers"
-import { diagramTemplates } from "@/lib/constants"
+import { loadMermaidExample, formatExampleName, createShareableUrl, fetchMermaidExamples } from "@/lib/helpers"
 
 interface ExamplesDropdownProps {
   theme: string
@@ -15,13 +14,23 @@ export default function ExamplesDropdown({ theme }: ExamplesDropdownProps) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Initialize example options for dropdown
-    const options = mermaidExamples.map(filename => ({
-      name: formatExampleName(filename),
-      filename
-    }))
-    setExampleOptions(options)
-    setLoading(false)
+    // Fetch examples from API
+    const loadExamples = async () => {
+      try {
+        const examples = await fetchMermaidExamples()
+        const options = examples.map(filename => ({
+          name: formatExampleName(filename),
+          filename
+        }))
+        setExampleOptions(options)
+      } catch (error) {
+        console.error('Failed to fetch examples:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadExamples()
   }, [])
 
   const loadExample = async (filename: string) => {
@@ -46,14 +55,6 @@ export default function ExamplesDropdown({ theme }: ExamplesDropdownProps) {
         <Button variant="outline" disabled={loading}>Examples</Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="max-h-[300px] overflow-y-auto">
-        <DropdownMenuLabel>Templates</DropdownMenuLabel>
-        {Object.entries(diagramTemplates).map(([key, template]) => (
-          <DropdownMenuItem key={key} onClick={() => (window.location.href = `/?data=${template}`)}>
-            {key}
-          </DropdownMenuItem>
-        ))}
-        
-        <DropdownMenuSeparator />
         <DropdownMenuLabel>Examples</DropdownMenuLabel>
         {exampleOptions.map((example) => (
           <DropdownMenuItem 

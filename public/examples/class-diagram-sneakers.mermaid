@@ -1,0 +1,35 @@
+classDiagram
+    class Product {
+        +String id
+        +String name
+        +float price
+        +getDetails()
+        +updateInventory()
+    }
+    class Sneaker {
+        +String brand
+        +String model
+        +String colorway
+        +String releaseDate
+        +float retailPrice
+        +float resellPrice
+        +checkAuthenticity()
+    }
+    class Customer {
+        +String id
+        +String name
+        +String email
+        +placeOrder()
+        +trackOrder()
+    }
+    class Order {
+        +String id
+        +Date orderDate
+        +String status
+        +float totalAmount
+        +processPayment()
+        +updateStatus()
+    }
+    Product <|-- Sneaker
+    Customer "1" -- "many" Order
+    Order "1" o-- "many" Sneaker 

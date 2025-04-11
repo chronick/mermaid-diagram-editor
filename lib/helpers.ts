@@ -36,15 +36,17 @@ export function createShareableUrl(mermaidCode: string, theme: string = 'default
   return `/?data=${compressed}`
 }
 
-// List of available mermaid examples
-export const mermaidExamples = [
-  'pie-chart-netflix.mermaid',
-  'pie-chart-voldemort.mermaid',
-  'basic-sequence.mermaid',
-  'basic-flowchart.mermaid',
-  'styled-flowchart.mermaid',
-  'sequence-loops-alt.mermaid',
-  'sequence-self-loop.mermaid',
-  'sequence-blog-service.mermaid',
-  'git-commit-flow.mermaid',
-] 
+// Fetch the list of available mermaid examples from the API
+export async function fetchMermaidExamples(): Promise<string[]> {
+  try {
+    const response = await fetch('/api/examples')
+    if (!response.ok) {
+      throw new Error('Failed to fetch mermaid examples')
+    }
+    const data = await response.json()
+    return data.examples
+  } catch (error) {
+    console.error('Error fetching mermaid examples:', error)
+    return []
+  }
+} 

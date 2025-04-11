@@ -1,0 +1,40 @@
+flowchart TD
+    start([Start]) --> browse[Browse Sneakers]
+    browse --> filter{Filter Options}
+    filter -->|Brand| brand[Browse by Brand]
+    filter -->|Price| price[Browse by Price]
+    filter -->|New Releases| new[View New Releases]
+    
+    brand --> select[Select Sneaker]
+    price --> select
+    new --> select
+    
+    select --> check{In Stock?}
+    check -->|Yes| size[Select Size]
+    check -->|No| wait[Join Waitlist]
+    wait --> notify[Get Notification]
+    notify --> restock[Item Restocked]
+    restock --> check
+    
+    size --> cart[Add to Cart]
+    cart --> auth{Logged In?}
+    auth -->|No| login[Sign In/Register]
+    login --> checkout
+    auth -->|Yes| checkout[Proceed to Checkout]
+    
+    checkout --> payment[Payment Method]
+    payment --> confirm[Confirm Order]
+    confirm --> process[Process Order]
+    process --> shipping[Ship Order]
+    shipping --> end([End])
+    
+    %% Styling definitions
+    classDef start fill:#9f6,stroke:#333,stroke-width:2px;
+    classDef process fill:#f96,stroke:#333,stroke-width:2px;
+    classDef decision fill:#0af,stroke:#333,stroke-width:2px;
+    classDef end fill:#f69,stroke:#333,stroke-width:2px;
+    
+    %% Apply styles
+    class start,end end
+    class check,filter,auth decision
+    class process,shipping,payment process 

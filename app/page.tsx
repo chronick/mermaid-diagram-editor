@@ -12,7 +12,7 @@ import type { DiagramData } from "@/lib/types"
 export default function Home() {
   const searchParams = useSearchParams()
   const [diagramCode, setDiagramCode] = useState<string>(defaultDiagramCode)
-  const [theme, setTheme] = useState<string>("default")
+  const [theme, setTheme] = useState<"base" | "default" | "dark" | "forest" | "neutral" | "null">("default")
   const [isInitialized, setIsInitialized] = useState(false)
   const updateTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const skipNextUpdateRef = useRef(false)
@@ -29,7 +29,7 @@ export default function Home() {
           const parsedData: DiagramData = JSON.parse(decompressed)
           setDiagramCode(parsedData.mermaidCode)
           if (parsedData.settings?.theme) {
-            setTheme(parsedData.settings.theme)
+            setTheme(parsedData.settings.theme as "base" | "default" | "dark" | "forest" | "neutral" | "null")
           }
         }
       } catch (error) {
@@ -43,7 +43,7 @@ export default function Home() {
           const parsedData: DiagramData = JSON.parse(savedDiagram)
           setDiagramCode(parsedData.mermaidCode)
           if (parsedData.settings?.theme) {
-            setTheme(parsedData.settings.theme)
+            setTheme(parsedData.settings.theme as "base" | "default" | "dark" | "forest" | "neutral" | "null")
           }
         } catch (error) {
           console.error("Failed to parse saved diagram", error)
@@ -103,7 +103,10 @@ export default function Home() {
   }
 
   const handleThemeChange = (newTheme: string) => {
-    setTheme(newTheme)
+    if (newTheme === "base" || newTheme === "default" || newTheme === "dark" || 
+        newTheme === "forest" || newTheme === "neutral" || newTheme === "null") {
+      setTheme(newTheme)
+    }
   }
 
   const generateShareUrl = () => {

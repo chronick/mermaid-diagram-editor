@@ -1,5 +1,5 @@
-graph LR
-    A[Square Rect] -- Link text --> B((Circle))
-    A --> C(Round Rect)
-    B --> D{Rhombus}
-    C --> D 
+flowchart TD
+    A[Browse Sneakers] --> B{Add to Cart?}
+    B -->|Yes| C[Checkout]
+    C --> D[Complete Order]
+    B ---->|No| E[Continue Shopping] 

@@ -1,13 +1,13 @@
 gitGraph:
-    commit "Ashish"
-    branch newbranch
-    checkout newbranch
-    commit id:"1111"
-    commit tag:"test"
+    commit id:"init" tag:"v1.0"
+    branch feature/new-releases
+    checkout feature/new-releases
+    commit id:"design"
+    commit id:"frontend"
     checkout main
-    commit type: HIGHLIGHT
-    commit
-    merge newbranch
-    commit
-    branch b2
-    commit 
+    commit id:"hotfix" type:HIGHLIGHT
+    merge feature/new-releases tag:"v1.1"
+    commit id:"analytics"
+    branch feature/checkout
+    checkout feature/checkout
+    commit id:"payment" 
