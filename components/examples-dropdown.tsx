@@ -3,10 +3,11 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu"
-import { loadMermaidExample, formatExampleName, createShareableUrl, fetchMermaidExamples } from "@/lib/helpers"
+import { formatExampleName, loadMermaidExample, fetchMermaidExamples, createExampleShareableUrl } from "@/lib/services/examples-service"
+import type { MermaidTheme } from "@/lib/types"
 
 interface ExamplesDropdownProps {
-  theme: string
+  theme: MermaidTheme
 }
 
 export default function ExamplesDropdown({ theme }: ExamplesDropdownProps) {
@@ -39,7 +40,7 @@ export default function ExamplesDropdown({ theme }: ExamplesDropdownProps) {
       const content = await loadMermaidExample(filename)
       if (content) {
         // Create a shareable URL with the example content
-        const url = createShareableUrl(content, theme)
+        const url = createExampleShareableUrl(content, theme)
         window.location.href = url
       }
     } catch (error) {

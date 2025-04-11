@@ -1,4 +1,5 @@
 import { compressToEncodedURIComponent } from "lz-string"
+import type { MermaidTheme } from "@/lib/types"
 
 // Helper to format filename to display name
 export function formatExampleName(filename: string): string {
@@ -24,8 +25,10 @@ export async function loadMermaidExample(filename: string): Promise<string> {
   }
 }
 
-// Create a shareable URL from mermaid code
-export function createShareableUrl(mermaidCode: string, theme: string = 'default'): string {
+/**
+ * Create a shareable URL from mermaid code
+ */
+export function createShareableUrl(mermaidCode: string, theme: MermaidTheme = 'default'): string {
   const data = {
     mermaidCode,
     settings: { theme },
@@ -49,4 +52,12 @@ export async function fetchMermaidExamples(): Promise<string[]> {
     console.error('Error fetching mermaid examples:', error)
     return []
   }
-} 
+}
+
+// Commonly used mermaid examples for help dialog
+export const mermaidExamples = [
+  'flowchart-example.mermaid',
+  'sequence-diagram-example.mermaid',
+  'class-diagram-example.mermaid',
+  'state-diagram-example.mermaid',
+] 

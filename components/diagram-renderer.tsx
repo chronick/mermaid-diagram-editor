@@ -1,13 +1,14 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import mermaid from "mermaid"
 import { Card, CardContent } from "@/components/ui/card"
 import { AlertCircle } from "lucide-react"
+import { initializeMermaid, renderMermaid } from "@/lib/services/mermaid-service"
+import type { MermaidTheme } from "@/lib/types"
 
 interface DiagramRendererProps {
   code: string
-  theme: "base" | "default" | "dark" | "forest" | "neutral" | "null"
+  theme: MermaidTheme
 }
 
 export default function DiagramRenderer({ code, theme }: DiagramRendererProps) {
@@ -16,15 +17,12 @@ export default function DiagramRenderer({ code, theme }: DiagramRendererProps) {
   const [lastValidSvg, setLastValidSvg] = useState<string | null>(null)
   const [isRendering, setIsRendering] = useState(false)
 
+  // Initialize mermaid when theme changes
   useEffect(() => {
-    mermaid.initialize({
-      startOnLoad: true,
-      theme: theme,
-      securityLevel: "loose",
-      logLevel: "error",
-    })
+    initializeMermaid(theme)
   }, [theme])
 
+  // Render diagram when code changes
   useEffect(() => {
     const renderDiagram = async () => {
       if (!containerRef.current) return
@@ -32,28 +30,29 @@ export default function DiagramRenderer({ code, theme }: DiagramRendererProps) {
       setIsRendering(true)
 
       try {
-        // Try to parse the diagram first to check for syntax errors
-        await mermaid.parse(code)
+        const result = await renderMermaid(code)
 
-        // If parsing succeeds, render the diagram
-        const { svg } = await mermaid.render("diagram", code)
+        if (result.success && result.svg) {
+          // If rendering was successful
+          setError(null)
+          setLastValidSvg(result.svg)
 
-        // If we get here, the rendering was successful
-        setError(null)
-        setLastValidSvg(svg)
+          // Update the container with the new SVG
+          if (containerRef.current) {
+            containerRef.current.innerHTML = result.svg
+          }
+        } else {
+          // If there was an error
+          setError(result.error || "Failed to render diagram")
 
-        // Update the container with the new SVG
-        if (containerRef.current) {
-          containerRef.current.innerHTML = svg
+          // Don't update the container - keep showing the last valid diagram
+          if (lastValidSvg && containerRef.current) {
+            containerRef.current.innerHTML = lastValidSvg
+          }
         }
       } catch (err: any) {
-        console.error("Mermaid rendering error:", err)
+        console.error("Unexpected error:", err)
         setError(err.message || "Failed to render diagram")
-
-        // Don't update the container - keep showing the last valid diagram
-        if (lastValidSvg && containerRef.current) {
-          containerRef.current.innerHTML = lastValidSvg
-        }
       } finally {
         setIsRendering(false)
       }

@@ -1,29 +1,16 @@
 "use client"
 
-import { useRef, useEffect, useState } from "react"
 import { Copy, Code, Maximize2, Minimize2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import dynamic from "next/dynamic"
-import { prettyFormat } from "@/lib/mermaid/format"
-import { useTheme } from "next-themes"
+import { useEditor } from "@/hooks/useEditor"
 
 // Dynamically import Monaco editor with no SSR
 const MonacoEditor = dynamic(
   () => import("@monaco-editor/react").then((mod) => mod.default),
   { ssr: false }
 )
-
-// Dynamically import vim and mermaid modules
-const initVimModeClient = async (editor: any, statusBarElement: HTMLDivElement | null) => {
-  const { initVimMode } = await import("monaco-vim")
-  return initVimMode(editor, statusBarElement)
-}
-
-const initMermaidClient = async (monaco: any) => {
-  const initMermaid = (await import("monaco-mermaid")).default
-  return initMermaid(monaco)
-}
 
 interface DiagramEditorProps {
   code: string
@@ -38,70 +25,16 @@ export default function DiagramEditor({
   onToggleExpand, 
   isExpanded = false 
 }: DiagramEditorProps) {
-  const editorRef = useRef<any>(null)
-  const vimStatusBarRef = useRef<HTMLDivElement>(null)
-  const [vimMode, setVimMode] = useState<any>(null)
-  const [copied, setCopied] = useState(false)
-  const { theme, resolvedTheme } = useTheme()
-  const [editorTheme, setEditorTheme] = useState<string>("vs-dark")
-  
-  // Update editor theme when app theme changes
-  useEffect(() => {
-    // resolvedTheme handles system preference
-    setEditorTheme(resolvedTheme === "dark" ? "vs-dark" : "vs")
-  }, [resolvedTheme])
-  
-  // Initialize vim mode and mermaid syntax highlighting
-  const handleEditorDidMount = async (editor: any, monaco: any) => {
-    editorRef.current = editor
-    
-    // Initialize mermaid syntax highlighting
-    await initMermaidClient(monaco)
-    
-    // Initialize Vim mode
-    const vim = await initVimModeClient(editor, vimStatusBarRef.current)
-    setVimMode(vim)
-  }
-  
-  // Cleanup vim mode when component unmounts
-  useEffect(() => {
-    return () => {
-      if (vimMode) {
-        vimMode.dispose()
-      }
-    }
-  }, [vimMode])
-  
-  // Copy code to clipboard
-  const handleCopy = () => {
-    if (editorRef.current) {
-      const code = editorRef.current.getValue()
-      navigator.clipboard.writeText(code)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    }
-  }
-  
-  // Format the code
-  const handleFormat = () => {
-    if (editorRef.current) {
-      editorRef.current.getAction("editor.action.formatDocument").run()
-    }
-  }
-  
-  // Use the extracted pretty format function
-  const handlePrettyFormat = () => {
-    if (editorRef.current) {
-      const code = editorRef.current.getValue()
-      try {
-        const formatted = prettyFormat(code)
-        editorRef.current.setValue(formatted)
-        onChange(formatted)
-      } catch (error) {
-        console.error("Error formatting diagram:", error)
-      }
-    }
-  }
+  const {
+    editorRef,
+    vimStatusBarRef,
+    editorTheme,
+    copied,
+    handleEditorDidMount,
+    handleCopy,
+    handleFormat,
+    handlePrettyFormat
+  } = useEditor()
 
   return (
     <div className="flex flex-col h-full w-full">
@@ -123,7 +56,7 @@ export default function DiagramEditor({
           <Code size={16} />
         </Button>
         <Button 
-          onClick={handlePrettyFormat}
+          onClick={() => handlePrettyFormat(onChange)}
           variant="outline"
           size="icon"
           title="Pretty format diagram"

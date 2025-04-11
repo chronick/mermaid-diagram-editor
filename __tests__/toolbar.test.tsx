@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react"
+import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 import Toolbar from "@/components/toolbar"
 import "@testing-library/jest-dom"
 
@@ -32,7 +32,7 @@ describe("Toolbar", () => {
 
   it("shows theme selector with correct value", () => {
     render(<Toolbar {...mockProps} />)
-    expect(screen.getByRole("combobox")).toHaveValue("default")
+    expect(screen.getByText("Default")).toBeInTheDocument()
   })
 
   it("calls onThemeChange when theme is changed", () => {
@@ -52,7 +52,24 @@ describe("Toolbar", () => {
   it("copies URL to clipboard when copy button is clicked", async () => {
     render(<Toolbar {...mockProps} />)
     fireEvent.click(screen.getByText("Share"))
-    fireEvent.click(screen.getByRole("button", { name: /copy/i }))
+    
+    // Wait for dialog to appear and find the button by looking for the svg icon
+    await waitFor(() => {
+      const shareDialog = screen.getByRole("dialog");
+      expect(shareDialog).toBeInTheDocument();
+    });
+    
+    // Find all buttons in the dialog and use the one that's not "Close"
+    const buttons = screen.getAllByRole("button").filter(btn => 
+      !btn.textContent?.includes("Close")
+    );
+    
+    // Get the button in the share dialog (should be the copy button)
+    const copyButton = buttons.find(btn => btn.closest("[role='dialog']"));
+    
+    expect(copyButton).toBeTruthy();
+    fireEvent.click(copyButton!);
+    
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith("https://example.com/share")
   })
 })

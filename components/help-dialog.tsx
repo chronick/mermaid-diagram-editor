@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { mermaidExamples, loadMermaidExample, formatExampleName } from "@/lib/helpers"
+import { mermaidExamples } from "@/lib/helpers"
+import { formatExampleName, loadMermaidExample } from "@/lib/services/examples-service"
 
 interface HelpDialogProps {
   open: boolean
