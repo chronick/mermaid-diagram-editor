@@ -9,8 +9,18 @@ jest.mock("mermaid", () => ({
 }));
 
 describe("Mermaid Service", () => {
+  // Original console.error to restore later
+  const originalConsoleError = console.error;
+  
   beforeEach(() => {
     jest.clearAllMocks();
+    // Mock console.error to silence expected errors during testing
+    console.error = jest.fn();
+  });
+  
+  afterEach(() => {
+    // Restore original console.error
+    console.error = originalConsoleError;
   });
 
   describe("initializeMermaid", () => {
@@ -78,6 +88,7 @@ describe("Mermaid Service", () => {
       });
       expect(mermaid.parse).toHaveBeenCalledWith("invalid diagram");
       expect(mermaid.render).not.toHaveBeenCalled();
+      expect(console.error).toHaveBeenCalled();
     });
 
     it("should handle unexpected errors", async () => {
@@ -90,6 +101,7 @@ describe("Mermaid Service", () => {
         success: false,
         error: "Render error",
       });
+      expect(console.error).toHaveBeenCalled();
     });
   });
 }); 

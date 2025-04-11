@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react"
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react"
 import Toolbar from "@/components/toolbar"
 import "@testing-library/jest-dom"
 
@@ -53,7 +53,7 @@ describe("Toolbar", () => {
     render(<Toolbar {...mockProps} />)
     fireEvent.click(screen.getByText("Share"))
     
-    // Wait for dialog to appear and find the button by looking for the svg icon
+    // Wait for dialog to appear and find the button looking for the svg icon
     await waitFor(() => {
       const shareDialog = screen.getByRole("dialog");
       expect(shareDialog).toBeInTheDocument();
@@ -68,7 +68,11 @@ describe("Toolbar", () => {
     const copyButton = buttons.find(btn => btn.closest("[role='dialog']"));
     
     expect(copyButton).toBeTruthy();
-    fireEvent.click(copyButton!);
+    
+    // Wrap the state-changing action in act()
+    await act(async () => {
+      fireEvent.click(copyButton!);
+    });
     
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith("https://example.com/share")
   })
