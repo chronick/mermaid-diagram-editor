@@ -1,4 +1,5 @@
 # Mermaid Diagram Editor
+<img width="1200" alt="Screenshot 2025-04-11 at 12 44 27 PM" src="https://github.com/user-attachments/assets/16518e39-1833-44b4-b6ea-273203d4fcb6" />
 
 A web-based editor for creating and editing Mermaid diagrams, built with Next.js and deployed on Vercel.
 
